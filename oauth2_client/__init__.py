@@ -124,14 +124,19 @@ class Client(object):
         if response.code != 200:
             raise Error(response.read())
 
-        response_args = simplejson.loads(response.read())
+        data = response.read()
+        try:
+            response_args = simplejson.loads(data)
+        except simplejson.decoder.JSONDecodeError:
+            #facebook and github send url encoded strings
+            response_args = urlparse.parse_qs(data)
 
         error = response_args.pop('error', None)
 
         if error is not None:
             raise Error(error)
 
-        self.access_token = response_args['access_token']
+        self.access_token = response_args['access_token'][-1]
 
         # refresh token is optional
         self.refresh_token = response_args.get('refresh_token', '')
@@ -206,7 +211,7 @@ class Client(object):
         raise ValueError(response.read())
 
 class GooglAPI(Client):
-    #user_agent = 'python_oauth2_client'
+    user_agent = 'python_oauth2_client'
     # OAuth API
     auth_uri = 'https://accounts.google.com/o/oauth2/auth'
     redeem_uri = 'https://accounts.google.com/o/oauth2/token'
@@ -228,3 +233,9 @@ class GooglAPI(Client):
         stat_url = self.api_uri + '?' + urllib.urlencode(params)
         headers = {'Content-Type': 'application/json'}
         return self.request(stat_url, None, headers)
+
+class FacebookAPI(Client):
+    user_agent = 'python_oauth2_client'
+    auth_uri = 'https://graph.facebook.com/oauth/authorize'
+    redeem_uri = 'https://graph.facebook.com/oauth/access_token'
+    refresh_uri = 'https://graph.facebook.com/oauth/access_token'
