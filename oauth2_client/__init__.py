@@ -26,15 +26,15 @@ class Client(object):
     """ Client for OAuth 2.0 'Bearer Token' """
     redirect_uri = None
     auth_uri = None
-    refresh_uri = None
+    redeem_uri = None
     user_agent = None
     scope = None
 
-    def __init__(self, client_id, client_secret, access_token=None,
+    def __init__(self, client_id, client_secret=None, access_token=None,
                  refresh_token=None, timeout=None):
 
-        if not client_id or not client_secret:
-            raise ValueError("Client_id and client_secret must be set.")
+        if not client_id:
+            raise ValueError("Client_id must be set.")
 
         self.client_id = client_id
         self.client_secret = client_secret
@@ -71,47 +71,62 @@ class Client(object):
 
         return '%s?%s' % (auth_uri, urllib.urlencode(params))
 
-    def redeem_code(self, refresh_uri=None, redirect_uri=None, code=None, scope=None):
+    def redeem_code(self, redeem_uri=None, redirect_uri=None, code=None,
+        scope=None):
         """Get an access token from the supplied code """
 
         # prepare required args
         if code is None:
             raise ValueError("Code must be set.")
+
         if redirect_uri is None:
             redirect_uri = self.redirect_uri
-        if refresh_uri is None:
-            refresh_uri = self.refresh_uri
+
+        if redeem_uri is None:
+            redeem_uri = self.redeem_uri
+
         if scope is None:
             scope = self.scope
 
         data = {
             'client_id': self.client_id,
-            'client_secret': self.client_secret,
             'code': code,
             'redirect_uri': redirect_uri,
             'grant_type' : 'authorization_code',
         }
 
+        if self.client_secret:
+            data['client_secret'] = self.client_secret,
+
         if scope is not None:
             data['scope'] = scope
+
         body = urllib.urlencode(data)
 
         headers = {'Content-type' : 'application/x-www-form-urlencoded'}
+
         if self.user_agent:
             headers['user-agent'] = self.user_agent
 
-        response = self._request(refresh_uri, body=body, method='POST', headers=headers)
+        response = self._request(redeem_uri, body=body, method='POST',
+            headers=headers
+        )
+
         if response.code != 200:
             raise Error(response.read())
+
         response_args = simplejson.loads(response.read())
 
         error = response_args.pop('error', None)
+
         if error is not None:
             raise Error(error)
 
         self.access_token = response_args['access_token']
+
         # refresh token is optional
         self.refresh_token = response_args.get('refresh_token', '')
+
         return self.access_token, self.refresh_token
 
     def refresh_access_token(self, refresh_uri=None, refresh_token=None):
