@@ -2,18 +2,18 @@
 #from distutils.core import setup
 from setuptools import setup, find_packages
 
-setup(name="foauth2",
-      version="0.9"
-      description="Library for OAuth version 2 'Bearer Token'",
-      author="Jack Diederich",
-      author_email="jackdied@gmail.com",
-      url="http://github.com/jackdied/foauth2",
-      packages = find_packages(),
-      license = "MIT License",
-      keywords="oauth",
-      zip_safe = True,
-      py_modules=['foauth2'],
-      classifiers=[
+setup(
+    name="oauth2_client"
+    , version="0.9"
+    , description="Library for OAuth version 2 'Bearer Token'"
+    , author="John Anderson"
+    , author_email="sontek@gmail.com"
+    , url="http://github.com/eventray/oauth2_client"
+    , packages = find_packages()
+    , license = "MIT License"
+    , keywords="oauth"
+    , zip_safe = True
+    , classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: Apache Software License',
@@ -25,4 +25,4 @@ setup(name="foauth2",
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         ],
-     )
+)

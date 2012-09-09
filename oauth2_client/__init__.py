@@ -1,37 +1,3 @@
-"""
-OAuth2.0a 'Bearer Token' handling.
-Based on https://github.com/OfflineLabs/python-oauth2/
-  * rips out all the httplib2 stuff
-  * rips out all the OAuth1.0a stuff
-  * based on the newest version of the spec[1] instead of the initial version
-
-[1] http://tools.ietf.org/html/draft-ietf-oauth-v2-18
-    http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-06
-
-The MIT License
-
-Portions Copyright (c) 2011 Jack Diederich c/o Curata, Inc.
-Portions Copyright (c) 2007 Leah Culver, Joe Stump, Mark Paschal, Vic Fryzel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-"""
-
 import urllib
 import urllib2
 import urlparse
@@ -41,8 +7,6 @@ try:
 except ImportError:
     # Have django or are running in the Google App Engine?
     from django.utils import simplejson
-
-VERSION = '0.9.1'
 
 class Error(RuntimeError):
     """Generic exception class."""
@@ -211,7 +175,7 @@ class Client(object):
         raise ValueError(response.read())
 
 class GooglAPI(Client):
-    user_agent = 'python-foauth2'
+    user_agent = 'python-oauth2_client'
     # OAuth API
     auth_uri = 'https://accounts.google.com/o/oauth2/auth'
     refresh_uri = 'https://accounts.google.com/o/oauth2/token'
