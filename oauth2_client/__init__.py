@@ -24,10 +24,10 @@ class Error(RuntimeError):
 
 class Client(object):
     """ Client for OAuth 2.0 'Bearer Token' """
+    user_agent = 'python_oauth2_client'
     redirect_uri = None
     auth_uri = None
     redeem_uri = None
-    refresh_uri = None
     user_agent = None
     scope = None
 
@@ -143,11 +143,11 @@ class Client(object):
 
         return self.access_token, self.refresh_token
 
-    def refresh_access_token(self, refresh_uri=None, refresh_token=None):
+    def refresh_access_token(self, redeem_uri=None, refresh_token=None):
         """  Get a new access token from the supplied refresh token """
 
-        if refresh_uri is None:
-            refresh_uri = self.refresh_uri
+        if redeem_uri is None:
+            redeem_uri = self.redeem_uri
 
         if refresh_token is None:
             refresh_token = self.refresh_token
@@ -166,7 +166,7 @@ class Client(object):
             headers['user-agent'] = self.user_agent
 
         # use _request here so it doesn't retry on HTTPError
-        response = self._request(refresh_uri, method='POST', body=body, headers=headers)
+        response = self._request(redeem_uri, method='POST', body=body, headers=headers)
 
         if response.code != 200:
             raise Error(response.read())
@@ -211,12 +211,11 @@ class Client(object):
         raise ValueError(response.read())
 
 class GooglAPI(Client):
-    user_agent = 'python_oauth2_client'
     # OAuth API
     auth_uri = 'https://accounts.google.com/o/oauth2/auth'
     redeem_uri = 'https://accounts.google.com/o/oauth2/token'
-    refresh_uri = 'https://accounts.google.com/o/oauth2/token'
     scope = 'https://www.googleapis.com/auth/urlshortener'
+
     # data API
     api_uri = 'https://www.googleapis.com/urlshortener/v1/url'
 
@@ -235,7 +234,9 @@ class GooglAPI(Client):
         return self.request(stat_url, None, headers)
 
 class FacebookAPI(Client):
-    user_agent = 'python_oauth2_client'
     auth_uri = 'https://graph.facebook.com/oauth/authorize'
     redeem_uri = 'https://graph.facebook.com/oauth/access_token'
-    refresh_uri = 'https://graph.facebook.com/oauth/access_token'
+
+class GithubAPI(Client):
+    auth_uri = 'https://github.com/login/oauth/authorize'
+    redeem_uri = 'https://github.com/login/oauth/access_token'
