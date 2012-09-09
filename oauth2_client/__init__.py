@@ -2,11 +2,11 @@ import urllib
 import urllib2
 import urlparse
 
-try:
-    import simplejson
-except ImportError:
-    # Have django or are running in the Google App Engine?
-    from django.utils import simplejson
+#try:
+import simplejson
+#except ImportError:
+#    # Have django or are running in the Google App Engine?
+#    from django.utils import simplejson
 
 class Error(RuntimeError):
     """Generic exception class."""
