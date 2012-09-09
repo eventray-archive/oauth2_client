@@ -27,6 +27,7 @@ class Client(object):
     redirect_uri = None
     auth_uri = None
     redeem_uri = None
+    refresh_uri = None
     user_agent = None
     scope = None
 
@@ -96,7 +97,7 @@ class Client(object):
         }
 
         if self.client_secret:
-            data['client_secret'] = self.client_secret,
+            data['client_secret'] = self.client_secret
 
         if scope is not None:
             data['scope'] = scope
@@ -108,9 +109,17 @@ class Client(object):
         if self.user_agent:
             headers['user-agent'] = self.user_agent
 
-        response = self._request(redeem_uri, body=body, method='POST',
-            headers=headers
-        )
+        # use _request here so we don't try to refresh_token if it fails
+        try:
+            response = self._request(redeem_uri, body=body, method='POST',
+                headers=headers
+            )
+        except urllib2.HTTPError as e:
+            print redeem_uri
+            print headers
+            print body
+            print e.readlines()
+            raise
 
         if response.code != 200:
             raise Error(response.read())
@@ -134,6 +143,7 @@ class Client(object):
 
         if refresh_uri is None:
             refresh_uri = self.refresh_uri
+
         if refresh_token is None:
             refresh_token = self.refresh_token
 
@@ -150,9 +160,12 @@ class Client(object):
         if self.user_agent:
             headers['user-agent'] = self.user_agent
 
+        # use _request here so it doesn't retry on HTTPError
         response = self._request(refresh_uri, method='POST', body=body, headers=headers)
+
         if response.code != 200:
             raise Error(response.read())
+
         response_args = simplejson.loads(response.read())
 
         self.access_token = response_args['access_token']
@@ -165,7 +178,9 @@ class Client(object):
             raise ValueError('POST requests must have a body')
 
         request = urllib2.Request(uri, body, headers)
-        return urllib2.urlopen(request, timeout=self.timeout)
+        response = urllib2.urlopen(request, timeout=self.timeout)
+
+        return response
 
     def request(self, uri, body, headers, method='GET'):
         """ perform a HTTP request using OAuth authentication.
@@ -187,12 +202,14 @@ class Client(object):
 
         if response.code == 200:
             return simplejson.loads(response.read())
+
         raise ValueError(response.read())
 
 class GooglAPI(Client):
-    user_agent = 'python-oauth2_client'
+    #user_agent = 'python_oauth2_client'
     # OAuth API
     auth_uri = 'https://accounts.google.com/o/oauth2/auth'
+    redeem_uri = 'https://accounts.google.com/o/oauth2/token'
     refresh_uri = 'https://accounts.google.com/o/oauth2/token'
     scope = 'https://www.googleapis.com/auth/urlshortener'
     # data API
@@ -208,6 +225,6 @@ class GooglAPI(Client):
         params = {'shortUrl': short_url,
                   'projection' : 'ANALYTICS_CLICKS',
                  }
-        stat_url = self.api_uri + '&' + urllib.urlencode(params)
+        stat_url = self.api_uri + '?' + urllib.urlencode(params)
         headers = {'Content-Type': 'application/json'}
         return self.request(stat_url, None, headers)
